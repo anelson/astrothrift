@@ -12,10 +12,10 @@ enum Body {
   Uranus = 7,
   Neptune = 8,
   Pluto = 9,
-  MeanNode = 10,
-  TrueNode = 11,
-  MeanApogee = 12,
-  OsculatingApogee = 13,
+  MeanLunarNode = 10,
+  TrueLunarNode = 11,
+  MeanLunarApogee = 12,
+  OsculatingLunarApogee = 13,
   Earth = 14,
   Chiron = 15,
   Pholus = 16,
@@ -68,14 +68,14 @@ enum CoordinateSystem {
 	EquatorialRectangular = 4
 }
 
-/** Position of a body, either long, lat, distance or x, y, z depending upon coordinate system */
+/** Position of a body, either long, lat, distance (degrees) or x, y, z (AU) depending upon coordinate system */
 struct Position {
 	1: double x,
 	2: double y,
 	3: double z
 }
 
-/** Velocity of a body, either deg long/day, deg lat/day, distance/day, or rx, ry, rz depending upon coordinate system */
+/** Velocity of a body, either deg long/day, deg lat/day, distance/day, or rx, ry, rz (AU/sec) depending upon coordinate system */
 struct Velocity {
 	1: double rx,
 	2: double ry,
@@ -91,10 +91,6 @@ typedef list<Body> Bodies
 
 typedef map<Body, State> BodyStates
 
-/** Sun and all the planets; for some reason thrift throws an error if the symbolic names of the enum values are used so make do with
-repeating the same int literals at before */
-const Bodies AllSolarBodies = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 14]
-
 /* Julian date, expressed in Universal Time (UT) */
 struct JulianDate {
 	1: double jd1,
@@ -109,11 +105,7 @@ exception ComputationNotImplemented {
 	1: string message
 }
 
-service AstroThrift {
-	/** Sets the path of the JPL ephemeris file to use.  This must be called first and refer to a JPL ephemeris file that the implementation
-	knows how to read, or attempts to get body state wil fail */
-	void setJplFile(1: string jplFilePath),
-
-	BodyStates computeBodyStates(1: Bodies bodies, 2: PositionSystem position, 3: CoordinateSystem coords, 4: JulianDate date)
+service AstroThriftService {
+	BodyStates computeBodyStates(1: Bodies bodies, 2: PositionSystem position, 3: CoordinateSystem coords, 4: JulianDate date) throws (1: AstroThriftError ate, 2: ComputationNotImplemented cni)
 }
 
